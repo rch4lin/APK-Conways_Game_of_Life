@@ -1,10 +1,10 @@
 package com.robin.conwaygameoflife;
 
 public class Cell {
-	int xCoord, yCoord;
+	private int xCoord, yCoord;
 	int left, right, top, bottom;
-	int cellSize;
-	boolean isLive;
+	private int cellSize;
+	private boolean isLive;
 	
 	/**
 	 * @param args
@@ -56,4 +56,19 @@ public class Cell {
 	public int getCellSize() {
 		return cellSize;
 	}
+	
+	public void setAlive(boolean state){
+		isLive = state;
+	}
+	
+	/**
+	 * true = alive
+	 * false = dead
+	 * @return
+	 */
+	public boolean isAlive(){
+		return isLive;
+	}
+	
 }
+
