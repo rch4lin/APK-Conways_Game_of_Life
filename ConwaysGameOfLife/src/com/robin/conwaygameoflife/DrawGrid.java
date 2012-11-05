@@ -29,8 +29,9 @@ public class DrawGrid extends View{
 		Log.d(TAG, "Drawing canvas");
 		if (activeCells.size()!=0){
 			canvas.drawColor(Color.rgb(68, 144, 212));
+			Rect r;
 			for (Cell c : activeCells){
-				Rect r = new Rect(c.left, c.top, c.right, c.bottom); 
+				r = new Rect(c.left, c.top, c.right, c.bottom); 
 				canvas.drawRect(r,p);
 			}
 			
