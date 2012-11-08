@@ -1,0 +1,308 @@
+package com.robin.conwaygameoflife;
+
+import java.util.ArrayList;
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.Display;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.MotionEvent;
+
+public class LifeGrid extends Activity {
+	private final static String TAG = "LifeGrid";
+	private static final int CELLSIZE = 10;
+	private static Cell[][] cellGrid;
+	private static int width, height;
+	private Cell refCell;
+	
+	static Display display;
+	public DrawGrid GRID;	
+	public static ArrayList<Cell> currentLiveCells;
+	public static ArrayList<Cell> futureLiveCells;
+	
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        display = getWindowManager().getDefaultDisplay(); 
+        width = display.getWidth();
+        height = display.getHeight();
+        
+        Log.d(TAG, "Size of display is " + width + " px in width, and " + height + " px in height");
+        Log.d(TAG, "Setting up canvas...");
+        Log.d(TAG, "Cell size is " + CELLSIZE + " px");
+        
+        currentLiveCells = new ArrayList<Cell>();
+        futureLiveCells = new ArrayList<Cell>();
+//        int myincome = (test < 300) ? true : false;
+        
+        Log.d(TAG, "First run");
+        
+        GRID = new DrawGrid(this, CELLSIZE, width, height, currentLiveCells);
+        setContentView(GRID);
+        GRID.requestFocus();
+        Log.d(TAG, "Creating cell grid");
+        setupCellGrid();
+
+    	createSeed();
+    	Log.d(TAG, "****Starting first run****");
+    	GRID.run(currentLiveCells);
+    }
+   
+    
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+    	menu.add(R.string.startMenu);
+        return true;
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+    	generate();
+    	updateCell();
+    	migrate(futureLiveCells, currentLiveCells); //moves data from future to current
+    	GRID.run(currentLiveCells);
+    	Log.d(TAG, "****Finishing iteartion****");
+    	return true;
+    }
+    
+    @Override
+    public boolean onTouchEvent(MotionEvent event){
+        int eventaction = event.getAction();
+
+        switch (eventaction) {
+            case MotionEvent.ACTION_DOWN: 
+                // finger touches the screen
+            	float x = event.getX();
+            	float y = event.getY();
+            	Log.d(TAG, "**********");
+            	Log.d(TAG, String.valueOf(x));
+            	Log.d(TAG, String.valueOf(y));
+            	Log.d(TAG, "***TOUCH EVENT OVER***");
+            	
+            	
+                break;
+        }
+    	return true;
+    }
+    
+    /**
+     * Empty 'current', and then copy all elements from 'future' to 'current'
+     * @param future
+     * @param current
+     */
+    private void migrate(ArrayList<Cell> future, ArrayList<Cell> current){
+    	Log.d(TAG, "Migrating data"); //source is future live cell, dest is current live cells
+    	Log.d(TAG, "Destination array is of size " + current.size());
+    	Log.d(TAG, "Source array is of size " + future.size());
+    	current.clear();
+    	for (Cell c : future){
+    		current.add(c);
+    	}
+    	future.clear();
+    }
+    
+    private void updateCell() {
+    	//resets everything
+    	Log.d(TAG, "Resting grid");
+    	for (Cell c : currentLiveCells){
+    		cellGrid[c.getYCoord()][c.getXCoord()].setAlive(false);
+    	}
+    	
+    	for (Cell c: futureLiveCells){
+    		cellGrid[c.getYCoord()][c.getXCoord()].setAlive(true);
+    	}
+    }
+    
+    /**
+     * Creates an X, where the centre of the X is the centre of the grid
+     */
+    private void createSeed() {
+//    	int myincome = (test < 300) ? true : false;
+
+    	Cell centreCell = cellGrid[30][23];
+    	centreCell.setAlive(true);
+
+    	Cell leftTopCell = cellGrid[29][23];
+    	leftTopCell.setAlive(true);
+    	
+    	//delete
+    	Cell rightTopCell = cellGrid[28][23];
+    	rightTopCell.setAlive(true);
+    	
+    	Cell leftBottomCell = cellGrid[29][22];
+    	leftBottomCell.setAlive(true);
+    	
+    	currentLiveCells.add(leftTopCell);
+    	currentLiveCells.add(rightTopCell);
+    	currentLiveCells.add(centreCell);
+    	currentLiveCells.add(leftBottomCell);
+    }
+    
+    private void setupCellGrid() {
+    	int numOfHorzCells = width/CELLSIZE; //48
+		int numOfVertCells = height/CELLSIZE;	//80
+		Log.d(TAG, numOfHorzCells + " horizontal cells, " +
+				numOfVertCells + " vertical cells");
+		//[y][x]
+		cellGrid = new Cell[numOfVertCells][numOfHorzCells];
+		Log.d(LifeGrid.TAG, "Drawing cells with size " + CELLSIZE);
+		int left = 0;
+		int top = 0;
+		int right = CELLSIZE;
+		int bottom = CELLSIZE;
+				
+//		Cell cell;
+		for (int y=0;y<numOfVertCells;y++){
+			for (int x=0; x<numOfHorzCells ; x++){
+				refCell = new Cell(x, y, false, CELLSIZE, left, top, right, bottom);
+				left+=CELLSIZE;
+				right+=CELLSIZE;
+				
+				//add to grid
+				cellGrid[y][x] = refCell;
+			}
+			left = 0; //resets back
+			right = CELLSIZE;
+			top += CELLSIZE;
+			bottom += CELLSIZE;
+		}
+    }
+    
+    private boolean isAlive(Cell cell) {
+    	//condition 1
+    	//Any live cell with fewer than two live neighbours dies, as if caused by under-population.
+    	boolean alive;
+    	switch (getNumOfNeighbouringActiveCells(cell)){
+    	case 0: //dies, underpopulation 
+    		alive = false;
+    		break;
+    	case 1: //dies underpopulation
+    		alive = false;
+    		break;
+    	case 2: //lives
+    		alive = true;
+    		break;
+    	case 3: 
+    		alive = true;
+    		break;
+    	default: //dies, overpopulation
+    		alive = false;
+    		break;
+    	}
+    	return alive;
+    }
+    
+    /**
+     * Checks to see if neighbouring cells are exactly 3, if so the dead cell is reproduced
+     * @param cell
+     */
+    private void isReproducable(Cell deadCell){
+    	//if cell is alive, there's no point to reproduce. The first 3 rules deals with live cells
+    	//prevents overlaps
+    	if (!deadCell.isAlive() && !futureLiveCells.contains(deadCell)) {
+    		if ((getNumOfNeighbouringActiveCells(deadCell))==3){
+    			Log.d(TAG, "Reproducing dead cell...");
+    			futureLiveCells.add(deadCell);
+    		}
+    	}
+    }
+    
+    /**
+     * look at to see if dead cell can be resurracted
+     * 
+     * @param cell
+     */
+    private void determineReproducedCell(Cell cell){
+    	Log.d(TAG, "Determing if cell at coord x " + cell.getXCoord() + " and coord y " + cell.getYCoord()
+    			+" can be resurracted");
+    	//Cells with >=2 live neighbours has a chance of reproduction for neighbouring dead cells
+    	//if less than 2, it's pointless to iterate through the 3x3 regions, optimizes it a bit
+    	if (getNumOfNeighbouringActiveCells(cell)>=2){
+    		for (int y = -1; y<2; y++){
+    			for (int x = -1; x<2; x++){
+    				refCell = cellGrid[cell.getYCoord()+y][cell.getXCoord()+x];
+    				isReproducable(refCell);
+    			}
+    		}
+    	}
+    }
+    
+    private void generate() {
+    	for (Cell c : currentLiveCells){
+    		Log.d(TAG, "Looking at cell at coord x " + c.getXCoord() + " and coord y " + c.getYCoord());
+    		if (isAlive(c)){
+    			Log.d(TAG, "Cell is alive based on first 3 rules of Conway");
+    			Log.d(TAG, "Adding cell to future live cells");
+    			futureLiveCells.add(c);
+    		}
+    		determineReproducedCell(c);
+    	}
+    }
+    
+    /**
+     * Determine neighbouring 8 cells
+     * 
+     * @param c
+     * @return
+     */
+    private int getNumOfNeighbouringActiveCells(Cell c) { 
+    	//determine centre coordinate of cell
+    	int numOfLiveCells=0; //counts first live cell used as reference to centreCell
+    	int yCoord = c.getYCoord();
+    	int xCoord = c.getXCoord();
+    	
+    	//need to check for index out of bounds
+    	//top left
+    	refCell = cellGrid[yCoord-1][xCoord-1];
+    	if (refCell.isAlive()){
+    		numOfLiveCells++;	
+    	}
+    	
+    	//top centre
+    	refCell = cellGrid[yCoord-1][xCoord];
+    	if (refCell.isAlive()){
+    		numOfLiveCells++;	
+    	}
+    	
+    	//corner top right
+    	refCell = cellGrid[yCoord-1][xCoord+1];
+    	if (refCell.isAlive()){
+    		numOfLiveCells++;	
+    	}
+    	
+    	//left
+    	refCell = cellGrid[yCoord][xCoord-1];
+    	if (refCell.isAlive()){
+    		numOfLiveCells++;	
+    	}
+    	
+    	//right
+    	refCell = cellGrid[yCoord][xCoord+1];
+    	if (refCell.isAlive()){
+    		numOfLiveCells++;	
+    	}
+    	
+    	//bottom left
+    	refCell = cellGrid[yCoord+1][xCoord-1];
+    	if (refCell.isAlive()){
+    		numOfLiveCells++;	
+    	}
+    	
+    	//bottom
+    	refCell = cellGrid[yCoord+1][xCoord];
+    	if (refCell.isAlive()){
+    		numOfLiveCells++;	
+    	}
+    	
+    	//bottom right
+    	refCell = cellGrid[yCoord+1][xCoord+1];
+    	if (refCell.isAlive()){
+    		numOfLiveCells++;	
+    	}
+    	return numOfLiveCells;
+    }
+    
+}

@@ -2,8 +2,9 @@
 <qualifiedTypeNameHistroy>
 <fullyQualifiedTypeName name="com.robin.conwaygameoflife.DrawGrid"/>
 <fullyQualifiedTypeName name="java.lang.SuppressWarnings"/>
-<fullyQualifiedTypeName name="java.util.ArrayList"/>
 <fullyQualifiedTypeName name="java.lang.InterruptedException"/>
 <fullyQualifiedTypeName name="com.robin.conwaygameoflife.Cell"/>
 <fullyQualifiedTypeName name="com.robin.conwaygameoflife.LifeGrid"/>
+<fullyQualifiedTypeName name="java.util.ArrayList"/>
+<fullyQualifiedTypeName name="android.view.MotionEvent"/>
 </qualifiedTypeNameHistroy>

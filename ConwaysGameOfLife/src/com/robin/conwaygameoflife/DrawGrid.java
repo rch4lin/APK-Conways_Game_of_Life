@@ -41,7 +41,6 @@ public class DrawGrid extends View{
 		}
 
 	}
-
 	
 	public void run(ArrayList<Cell> cL){
 		activeCells = cL;
@@ -49,4 +48,6 @@ public class DrawGrid extends View{
 		Log.d(TAG, "Receiving live cell array");
 		invalidate();
 	}
+	
+	
 }

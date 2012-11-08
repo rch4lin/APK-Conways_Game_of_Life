@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 
 public class LifeGrid extends Activity {
 	private final static String TAG = "LifeGrid";
@@ -63,9 +64,52 @@ public class LifeGrid extends Activity {
     	updateCell();
     	migrate(futureLiveCells, currentLiveCells); //moves data from future to current
     	GRID.run(currentLiveCells);
-    	Log.d(TAG, "****Finishing first run****");
+    	Log.d(TAG, "****Finishing iteartion****");
     	return true;
     }
+    
+    @Override
+    public boolean onTouchEvent(MotionEvent event){
+        int eventaction = event.getAction();
+
+        switch (eventaction) {
+            case MotionEvent.ACTION_DOWN: 
+                // finger touches the screen
+            	float x= event.getX();
+            	float y = event.getY();
+
+            	int gridValueX = Math.round(x)/CELLSIZE;
+            	int gridValueY = Math.round(y)/CELLSIZE;
+            	
+            	Log.d(TAG, "**********");
+            	Log.d(TAG, String.valueOf(x));
+            	Log.d(TAG, String.valueOf(y));
+            	Log.d(TAG, String.valueOf(Math.round(x)));
+            	//check for overlaps!
+            	//de-select cells?
+            	
+            	Log.d(TAG, "Grid value X " + gridValueX);
+            	Log.d(TAG, "Grid value Y " + gridValueY);
+            	Cell c = cellGrid[gridValueY-CELLSIZE][gridValueX];
+            	if (c.isAlive()){
+            		c.setAlive(false);
+            		currentLiveCells.remove(c);
+            	}else {
+            		c.setAlive(true);
+            		currentLiveCells.add(c);
+            	}
+            	GRID.run(currentLiveCells);
+            	Log.d(TAG, "***TOUCH EVENT OVER***");
+            	
+                break;
+        }
+    	return true;
+    }
+    
+//    public Cell getTouchedCell(float x, float y){
+//    }
+    
+    
     
     /**
      * Empty 'current', and then copy all elements from 'future' to 'current'
@@ -113,6 +157,25 @@ public class LifeGrid extends Activity {
     	
     	Cell leftBottomCell = cellGrid[29][22];
     	leftBottomCell.setAlive(true);
+    	
+    	
+    	//***test
+//    	Cell c1 = cellGrid[27][23];
+//    	cellGrid[27][23].setAlive(true);
+//    	Cell c2 = cellGrid[27][24];
+//    	cellGrid[27][24].setAlive(true);
+//    	Cell c3 = cellGrid[27][25];
+//    	cellGrid[27][25].setAlive(true);
+//    	Cell c4 = cellGrid[28][24];
+//    	cellGrid[28][24].setAlive(true);
+//    	Cell c5 = cellGrid[28][25];
+//    	cellGrid[28][25].setAlive(true);
+//    	currentLiveCells.add(c1);
+//    	currentLiveCells.add(c2);
+//    	currentLiveCells.add(c3);
+//    	currentLiveCells.add(c5);
+//    	currentLiveCells.add(c4);
+    	
     	
     	currentLiveCells.add(leftTopCell);
     	currentLiveCells.add(rightTopCell);
@@ -199,14 +262,14 @@ public class LifeGrid extends Activity {
     			+" can be resurracted");
     	//Cells with >=2 live neighbours has a chance of reproduction for neighbouring dead cells
     	//if less than 2, it's pointless to iterate through the 3x3 regions, optimizes it a bit
-    	if (getNumOfNeighbouringActiveCells(cell)>=2){
+//    	if (getNumOfNeighbouringActiveCells(cell)>=0){
     		for (int y = -1; y<2; y++){
     			for (int x = -1; x<2; x++){
     				refCell = cellGrid[cell.getYCoord()+y][cell.getXCoord()+x];
     				isReproducable(refCell);
     			}
     		}
-    	}
+//    	}
     }
     
     private void generate() {
